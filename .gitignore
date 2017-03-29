@@ -1,0 +1,7 @@
+.DS_STORE
+.git
+*.log
+node_modules
+wallhaven
+zhuoku
+
