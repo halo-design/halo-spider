@@ -4,6 +4,7 @@
   "description": "web spider",
   "scripts": {
     "wh": "node bin/wh-spider.js",
+    "wh2": "node bin/wh-spider-concurrent.js",
     "jd": "node bin/jd-spider.js"
   },
   "keywords": [
