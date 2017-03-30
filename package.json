@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "web spider",
   "scripts": {
-    "wh": "node bin/wallhaven-crawler.js",
-    "zk": "node bin/zhuoku-crawler.js"
+    "wh": "node bin/wh-spider.js",
+    "jd": "node bin/jd-spider.js"
   },
   "keywords": [
     "spider"
@@ -12,6 +12,7 @@
   "author": "Aford",
   "license": "MIT",
   "dependencies": {
+    "async": "^2.2.0",
     "cheerio": "^0.22.0",
     "express": "^4.15.2",
     "fs": "^0.0.1-security",
