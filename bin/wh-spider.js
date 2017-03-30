@@ -23,7 +23,7 @@ const generatePagesURL = (start, end, dir) => {
   return URLS
 }
 
-const PAGES_URL = generatePagesURL(1, 2, './wallhaven')
+const PAGES_URL = generatePagesURL(1, 10, './wallhaven')
 
 const getPageLnk = (url, cb, fn) => {
   const options = {
