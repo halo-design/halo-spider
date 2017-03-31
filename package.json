@@ -5,6 +5,7 @@
   "scripts": {
     "wh": "node bin/wh-spider.js",
     "wh-url": "node bin/wh-url-spider.js",
+    "wh-img": "node bin/wh-img-spider.js",
     "jd": "node bin/jd-spider.js"
   },
   "keywords": [

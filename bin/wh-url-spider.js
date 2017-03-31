@@ -13,10 +13,12 @@ const prefixHeader = {
 
 const thread = 10
 const output = './wallhaven'
+const jsonFileName = './wallhaven-view.json'
 
 let secPageUrl = []
 let allImgURL = []
 
+// https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
 // https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
 const URL_TPL = num => `https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=${num}`
 
@@ -25,12 +27,10 @@ const genPagesURL = (start, end, dir) => {
   for (let i = start; i <= end; i++) {
     URLS.push(URL_TPL(i))
   }
-  // create folder
-  mkdirp(dir, err => err ? console.log(chalk.red(err)) : console.log(chalk.green(`${dir}:Folder created successfully!`)))
   return URLS
 }
 
-const PAGES_URL = genPagesURL(1, 20, output)
+const PAGES_URL = genPagesURL(1, 100, output)
 
 const getContent = (url, cb, cb1) => {
   const options = {
@@ -59,31 +59,12 @@ const getURL = (data, filter, attr, everyCb) => {
   return URL
 }
 
-const downloadImage = (uri, cb) => {
-  const dir = output
-  request({
-    uri: uri,
-    encoding: 'binary'
-  },
-  (error, res, body) => {
-    if (!error && res.statusCode == 200) {
-      if (!body) {
-          console.log(chalk.red('Unable to get content!'))
-      }
-      const fileName = `${Date.now()}&${~~(Math.random()*4000)}${uri.substr(-4, 4)}` 
-      fs.writeFile(`${dir}/${fileName}`, body, 'binary', err => err ? console.log(chalk.red(err)) : console.log(chalk.green(`${fileName}:Image are downloaded over!`)))
-    }
-    cb && cb(null, null)
-  })
-}
-
 async.mapLimit(PAGES_URL, thread, (url, cb) => getContent(url, data => getURL(data, 'a.preview', 'href', url => secPageUrl.push(url)), cb), (error, result) => {
   console.log('Get all page links!')
   async.mapLimit(secPageUrl, thread, (url, cb) => getContent(url, data => getURL(data, '#wallpaper', 'src', url => allImgURL.push(url)), cb), (err, rzt) => {
     console.log(chalk.green('Get all images links!'))
-    console.log(chalk.yellow('Start downloading images!'))
-    async.mapLimit(allImgURL, thread, (url, cb) => downloadImage(url, cb), (er, rz) => {
-      console.log(chalk.green('All pictures are downloaded successfully!'))
-    })
+    const images = {}
+    images.src = allImgURL
+    fs.writeFileSync(jsonFileName, JSON.stringify(images))
   })
 })

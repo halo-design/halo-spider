@@ -2,6 +2,7 @@ const request = require('request')
 const cheerio = require('cheerio')
 const mkdirp = require('mkdirp')
 const async = require('async')
+const chalk = require('chalk')
 const path = require('path')
 const fs = require('fs')
 
@@ -10,38 +11,56 @@ const prefixHeader = {
   'Connection': 'keep-alive'
 }
 
+const thread = 10
+const output = './wallhaven'
+
+let secPageUrl = []
+let allImgURL = []
+
 // https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
 const URL_TPL = num => `https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=${num}`
 
-const generatePagesURL = (start, end, dir) => {
+const genPagesURL = (start, end, dir) => {
   let URLS = []
   for (let i = start; i <= end; i++) {
     URLS.push(URL_TPL(i))
   }
   // create folder
-  mkdirp(dir, err => err ? console.log(err) : console.log(`${dir}:Folder created successfully!`))
+  mkdirp(dir, err => err ? console.log(chalk.red(err)) : console.log(chalk.green(`${dir}:Folder created successfully!`)))
   return URLS
 }
 
-const PAGES_URL = generatePagesURL(1, 10, './wallhaven')
+const PAGES_URL = genPagesURL(1, 20, output)
 
-const getPageLnk = (url, cb, fn) => {
+const getContent = (url, cb, cb1) => {
   const options = {
     url: url,
     headers: prefixHeader
   }
-  console.log(`Start getting the page content：${options.url}`)
-
+  console.log(chalk.yellow(`Start getting the page content：${options.url}`))
   request(options, (error, response, body) => {
-    err => err ? console.log(err) : console.log(`${options.url}:Get successfully!`)
+    error => error ? console.log(chalk.red(error)) : console.log(chalk.green(`${options.url}:Get successfully!`))
     if (!error && response.statusCode == 200) {
-      fn(options.url, body)
-      cb(null, null)
+      cb(body)
     }
+    cb1 && cb1(null, null)
   })
 }
 
-const downloadImage = (uri, filename, dir) => {
+const getURL = (data, filter, attr, everyCb) => {
+  const $ = cheerio.load(data)
+  let URL = []
+  $(filter).each(function () {
+    let lnk = $(this).attr(attr)
+    lnk.indexOf('http') === -1 ?  lnk = `http:${lnk}` : null
+    URL.push(lnk)
+    everyCb && everyCb(lnk)
+  })
+  return URL
+}
+
+const downloadImage = (uri, cb) => {
+  const dir = output
   request({
     uri: uri,
     encoding: 'binary'
@@ -49,31 +68,22 @@ const downloadImage = (uri, filename, dir) => {
   (error, res, body) => {
     if (!error && res.statusCode == 200) {
       if (!body) {
-          console.log("Unable to get content!")
-      } 
-      fs.writeFile(`${dir}/${filename}`, body, 'binary', err => err ? console.log(err) : console.log(`${dir}/${filename}:Image are downloaded over!`))
+          console.log(chalk.red('Unable to get content!'))
+      }
+      const fileName = `${Date.now()}&${~~(Math.random()*4000)}${uri.substr(-4, 4)}` 
+      fs.writeFile(`${dir}/${fileName}`, body, 'binary', err => err ? console.log(chalk.red(err)) : console.log(chalk.green(`${fileName}:Image are downloaded over!`)))
     }
+    cb && cb(null, null)
   })
 }
 
-const analysisThirdPageURL  = (parentURL, data) => {
-  const $ = cheerio.load(data)
-  let imgURI = $('#wallpaper').attr('src')
-  imgURI.indexOf('http') === -1 ?  imgURI = `http:${imgURI}` : null
-  const fileName = `${Date.now()}&${~~(Math.random()*4000)}${imgURI.substr(-4, 4)}`
-  downloadImage(imgURI, fileName, './wallhaven')
-}
-
-const analysisSecondaryPageURL = (parentURL, data) => {
-  const $ = cheerio.load(data)
-  let secPagesURL = [] 
-  $('a.preview').each(function () {
-    let href = $(this).attr('href')
-    secPagesURL.push(href)
-    getPageLnk(href, () => {}, analysisThirdPageURL)
+async.mapLimit(PAGES_URL, thread, (url, cb) => getContent(url, data => getURL(data, 'a.preview', 'href', url => secPageUrl.push(url)), cb), (error, result) => {
+  console.log('Get all page links!')
+  async.mapLimit(secPageUrl, thread, (url, cb) => getContent(url, data => getURL(data, '#wallpaper', 'src', url => allImgURL.push(url)), cb), (err, rzt) => {
+    console.log(chalk.green('Get all images links!'))
+    console.log(chalk.yellow('Start downloading images!'))
+    async.mapLimit(allImgURL, thread, (url, cb) => downloadImage(url, cb), (er, rz) => {
+      console.log(chalk.green('All pictures are downloaded successfully!'))
+    })
   })
-  console.log(`'Get ${secPagesURL.length} secondary pages!`)
-}
-
-
-async.eachSeries(PAGES_URL, (url, cb) => getPageLnk(url, cb, analysisSecondaryPageURL), (err, rzt) => console.log('Get all page links!'))
+})
