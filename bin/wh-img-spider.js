@@ -8,11 +8,11 @@ const fs = require('fs')
 
 let index = 0
 const dir = './wallhaven'
-const file = './wallhaven.json'
+const file = './data/wallhaven.json'
 const images = JSON.parse(fs.readFileSync(file)).src
 
 // create folder
-mkdirp(dir, err => err ? console.log(chalk.red(err)) : console.log(chalk.green(`${dir}:Folder created successfully!`)))
+mkdirp(dir, err => err ? console.log(chalk.red(err)) : console.log(chalk.green(`${dir} created successfully!`)))
 
 const downImgList = images.slice(0)
 
@@ -31,7 +31,7 @@ const downloadImage = (uri, cb) => {
         if (err) {
           console.log(chalk.red(err)) 
         } else {
-          console.log(chalk.green(`${fileName}:Image are downloaded over!`))
+          console.log(chalk.green(`${fileName} are downloaded over!`))
           index++
         }
       })

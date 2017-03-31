@@ -13,7 +13,7 @@ const prefixHeader = {
 
 const thread = 10
 const output = './wallhaven'
-const jsonFileName = './wallhaven-view.json'
+const jsonFileName = './data/wallhaven-view.json'
 
 let secPageUrl = []
 let allImgURL = []
@@ -30,7 +30,7 @@ const genPagesURL = (start, end, dir) => {
   return URLS
 }
 
-const PAGES_URL = genPagesURL(1, 100, output)
+const PAGES_URL = genPagesURL(1, 200, output)
 
 const getContent = (url, cb, cb1) => {
   const options = {
