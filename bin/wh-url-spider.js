@@ -61,12 +61,36 @@ const getURL = (data, filter, attr, everyCb) => {
   return URL
 }
 
-async.mapLimit(PAGES_URL, thread, (url, cb) => getContent(url, data => getURL(data, 'a.preview', 'href', url => secPageUrl.push(url)), cb), (error, result) => {
-  console.log('Get all page links!')
-  async.mapLimit(secPageUrl, thread, (url, cb) => getContent(url, data => getURL(data, '#wallpaper', 'src', url => allImgURL.push(url)), cb), (err, rzt) => {
-    console.log(chalk.green('Get all images links!'))
-    const images = {}
-    images.src = allImgURL
-    fs.writeFileSync(jsonFileName, JSON.stringify(images))
-  })
-})
+async.mapLimit(
+  PAGES_URL,
+
+  thread,
+
+  (url, cb) => getContent(
+    url, 
+    data => getURL(data, 'a.preview', 'href', url => secPageUrl.push(url)), 
+    cb
+  ),
+
+  (error, result) => {
+    console.log('Get all page links!')
+
+    async.mapLimit(
+      secPageUrl, 
+      thread, 
+      
+      (url, cb) => getContent(
+        url, 
+        data => getURL(data, '#wallpaper', 'src', url => allImgURL.push(url)), 
+        cb
+      ), 
+
+      (err, rzt) => {
+        console.log(chalk.green('Get all images links!'))
+        const images = {}
+        images.src = allImgURL
+        fs.writeFileSync(jsonFileName, JSON.stringify(images))
+      }
+    )
+  }
+)

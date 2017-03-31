@@ -29,7 +29,7 @@ const downloadImage = (uri, cb) => {
   (error, res, body) => {
     if (!error && res.statusCode == 200) {
       if (!body) {
-          console.log(chalk.red('Unable to get content!'))
+        console.log(chalk.red('Unable to get content!'))
       }
       const fileName = `${index}-${Date.now()}${uri.substr(-4, 4)}` 
       fs.writeFile(`${dir}/${fileName}`, body, 'binary', err => {
@@ -46,4 +46,10 @@ const downloadImage = (uri, cb) => {
 }
 
 console.log(chalk.green(`There are ${downImgList.length} pictures waiting to be downloaded...`))
-async.mapLimit(downImgList, 10, (url, cb) => downloadImage(url, cb), (err, rzt) => console.log(chalk.green('All pictures are downloaded successfully!')))
+
+async.mapLimit(
+  downImgList, 
+  10, 
+  (url, cb) => downloadImage(url, cb), 
+  (err, rzt) => console.log(chalk.green('All pictures are downloaded successfully!'))
+)
