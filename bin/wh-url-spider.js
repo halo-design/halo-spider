@@ -30,7 +30,7 @@ const genPagesURL = (start, end, dir) => {
   return URLS
 }
 
-const PAGES_URL = genPagesURL(1, 200, output)
+const PAGES_URL = genPagesURL(1, 100, output)
 
 const getContent = (url, cb, cb1) => {
   const options = {
