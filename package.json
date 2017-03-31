@@ -4,7 +4,7 @@
   "description": "web spider",
   "scripts": {
     "wh": "node bin/wh-spider.js",
-    "wh2": "node bin/wh-spider-concurrent.js",
+    "wh-url": "node bin/wh-url-spider.js",
     "jd": "node bin/jd-spider.js"
   },
   "keywords": [
@@ -14,6 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "^2.2.0",
+    "chalk": "^1.1.3",
     "cheerio": "^0.22.0",
     "express": "^4.15.2",
     "fs": "^0.0.1-security",
