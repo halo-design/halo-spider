@@ -6,15 +6,20 @@ const chalk = require('chalk')
 const path = require('path')
 const fs = require('fs')
 
-let index = 0
-const dir = './wallhaven'
-const file = './data/wallhaven.json'
+const dir = './wallhaven-view'
+const file = './data/wallhaven-view.json'
 const images = JSON.parse(fs.readFileSync(file)).src
+const startIndex = 0
+const endIndex = null
+
+let index = 0
 
 // create folder
 mkdirp(dir, err => err ? console.log(chalk.red(err)) : console.log(chalk.green(`${dir} created successfully!`)))
 
-const downImgList = images.slice(0)
+const downImgList = endIndex === null 
+? images.slice(startIndex)
+: images.slice(startIndex, endIndex)
 
 const downloadImage = (uri, cb) => {
   request({

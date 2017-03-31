@@ -12,17 +12,19 @@ const prefixHeader = {
 }
 
 const thread = 10
-const output = './wallhaven'
-const jsonFileName = './data/wallhaven-view.json'
+const startPage = 1
+const endPage = 100
+const jsonFileName = './data/wallhaven-randon.json'
 
 let secPageUrl = []
 let allImgURL = []
 
+// https://alpha.wallhaven.cc/random?page=
 // https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
 // https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
-const URL_TPL = num => `https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=${num}`
+const URL_TPL = num => `https://alpha.wallhaven.cc/random?page=${num}`
 
-const genPagesURL = (start, end, dir) => {
+const genPagesURL = (start, end) => {
   let URLS = []
   for (let i = start; i <= end; i++) {
     URLS.push(URL_TPL(i))
@@ -30,7 +32,7 @@ const genPagesURL = (start, end, dir) => {
   return URLS
 }
 
-const PAGES_URL = genPagesURL(1, 100, output)
+const PAGES_URL = genPagesURL(startPage, endPage)
 
 const getContent = (url, cb, cb1) => {
   const options = {
