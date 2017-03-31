@@ -14,7 +14,7 @@ const prefixHeader = {
 const thread = 10
 const startPage = 1
 const endPage = 100
-const jsonFileName = './data/wallhaven-randon.json'
+const jsonFileName = './data/wallhaven-random.json'
 
 let secPageUrl = []
 let allImgURL = []

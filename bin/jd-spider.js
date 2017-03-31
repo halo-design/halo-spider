@@ -10,6 +10,8 @@ const prefixHeader = {
   'Connection': 'keep-alive'
 }
 
+const output = './assets/jandan'
+
 const URL_TPL = num => `http://jandan.net/ooxx/page-${num}#comments`
 
 const generatePagesURL = (start, end, dir) => {
@@ -22,7 +24,7 @@ const generatePagesURL = (start, end, dir) => {
   return URLS
 }
 
-const PAGES_URL = generatePagesURL(2000, 2200, './jiandan')
+const PAGES_URL = generatePagesURL(1800, 2000, output)
 
 const getPageLnk = (url, cb, fn) => {
   const options = {
@@ -63,7 +65,7 @@ const analysisPageURL = (parentURL, data) => {
     href.indexOf('http') === -1 ?  href = `http:${href}` : null
     imgURL.push(href)
     const fileName = `${Date.now()}&${~~(Math.random()*4000)}${href.substr(-4, 4)}`
-    downloadImage(href, fileName, './jiandan')
+    downloadImage(href, fileName, output)
   })
   console.log(`Get ${imgURL.length} images!`)
 }

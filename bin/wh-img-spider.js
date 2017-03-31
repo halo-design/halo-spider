@@ -6,13 +6,13 @@ const chalk = require('chalk')
 const path = require('path')
 const fs = require('fs')
 
-const dir = './wallhaven-view'
-const file = './data/wallhaven-view.json'
+const dir = './assets/wallhaven-random'
+const file = './data/wallhaven-random.json'
 const images = JSON.parse(fs.readFileSync(file)).src
-const startIndex = 0
+const startIndex = 131
 const endIndex = null
 
-let index = 0
+let index = 134
 
 // create folder
 mkdirp(dir, err => err ? console.log(chalk.red(err)) : console.log(chalk.green(`${dir} created successfully!`)))
