@@ -11,20 +11,25 @@ const prefixHeader = {
   'Connection': 'keep-alive'
 }
 
-const thread = 20
-const startPage = 1
-const endPage = 30
-const jsonFileName = './data/wallhaven-latest.json'
+const thread = 50
+const startPage = 1501
+const endPage = 2154
+const jsonFileName = './data/wallhaven-girls.json'
+
+const reqTimeout = 40000
 
 let secPageUrl = []
 let allImgURL = []
+
+let failedCount = 0
 
 // https://alpha.wallhaven.cc/random?page=
 // https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
 // https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
 // https://alpha.wallhaven.cc/search?categories=111&purity=110&sorting=favorites&order=desc&page=
+// https://alpha.wallhaven.cc/search?categories=001&purity=100&sorting=favorites&order=desc&page=
 // https://alpha.wallhaven.cc/latest?page=
-const URL_TPL = num => `https://alpha.wallhaven.cc/latest?page=${num}`
+const URL_TPL = num => `https://alpha.wallhaven.cc/search?categories=001&purity=100&sorting=favorites&order=desc&page=${num}`
 
 const genPagesURL = (start, end) => {
   let URLS = []
@@ -36,18 +41,21 @@ const genPagesURL = (start, end) => {
 
 const PAGES_URL = genPagesURL(startPage, endPage)
 
-const getContent = (url, cb, cb1) => {
+const getContent = (url, cb, hookCb) => {
   const options = {
     url: url,
-    headers: prefixHeader
+    headers: prefixHeader,
+    timeout: reqTimeout
   }
-  console.log(`Start getting the page content：${options.url}`.yellow)
   request(options, (error, response, body) => {
-    error => error ? console.log(error.red) : console.log(`${options.url}:Get successfully!`.green)
-    if (!error && response.statusCode == 200) {
+    if (error) {
+      console.log(`[${error}] ${options.url} get failed!`.red)
+      failedCount++
+    } else if (response.statusCode == 200) {
+      console.log(`${options.url}: Content get successfully!`.green)
       cb(body)
     }
-    cb1 && cb1(null, null)
+    hookCb && hookCb(null, null)
   })
 }
 
@@ -65,7 +73,6 @@ const getURL = (data, filter, attr, everyCb) => {
 
 async.mapLimit(
   PAGES_URL,
-
   thread,
 
   (url, cb) => getContent(
@@ -75,7 +82,7 @@ async.mapLimit(
   ),
 
   (error, result) => {
-    console.log('Get all page links!')
+    console.log(`Get ${PAGES_URL.length} pages link!`.green)
 
     async.mapLimit(
       secPageUrl, 
@@ -88,7 +95,8 @@ async.mapLimit(
       ), 
 
       (err, rzt) => {
-        console.log('Get all images links!'.green)
+        console.log(`Get ${failedCount} images link failed!`.red)
+        console.log(`Get ${allImgURL.length - failedCount} images link successfully!`.green)
         const images = {}
         images.src = allImgURL
         fs.writeFileSync(jsonFileName, JSON.stringify(images))
