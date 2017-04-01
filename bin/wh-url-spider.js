@@ -1,8 +1,8 @@
 const request = require('request')
 const cheerio = require('cheerio')
+const colors = require('colors')
 const mkdirp = require('mkdirp')
 const async = require('async')
-const chalk = require('chalk')
 const path = require('path')
 const fs = require('fs')
 
@@ -11,10 +11,10 @@ const prefixHeader = {
   'Connection': 'keep-alive'
 }
 
-const thread = 10
+const thread = 20
 const startPage = 1
-const endPage = 100
-const jsonFileName = './data/wallhaven-random.json'
+const endPage = 30
+const jsonFileName = './data/wallhaven-latest.json'
 
 let secPageUrl = []
 let allImgURL = []
@@ -22,7 +22,9 @@ let allImgURL = []
 // https://alpha.wallhaven.cc/random?page=
 // https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
 // https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
-const URL_TPL = num => `https://alpha.wallhaven.cc/random?page=${num}`
+// https://alpha.wallhaven.cc/search?categories=111&purity=110&sorting=favorites&order=desc&page=
+// https://alpha.wallhaven.cc/latest?page=
+const URL_TPL = num => `https://alpha.wallhaven.cc/latest?page=${num}`
 
 const genPagesURL = (start, end) => {
   let URLS = []
@@ -39,9 +41,9 @@ const getContent = (url, cb, cb1) => {
     url: url,
     headers: prefixHeader
   }
-  console.log(chalk.yellow(`Start getting the page content：${options.url}`))
+  console.log(`Start getting the page content：${options.url}`.yellow)
   request(options, (error, response, body) => {
-    error => error ? console.log(chalk.red(error)) : console.log(chalk.green(`${options.url}:Get successfully!`))
+    error => error ? console.log(error.red) : console.log(`${options.url}:Get successfully!`.green)
     if (!error && response.statusCode == 200) {
       cb(body)
     }
@@ -86,7 +88,7 @@ async.mapLimit(
       ), 
 
       (err, rzt) => {
-        console.log(chalk.green('Get all images links!'))
+        console.log('Get all images links!'.green)
         const images = {}
         images.src = allImgURL
         fs.writeFileSync(jsonFileName, JSON.stringify(images))

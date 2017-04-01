@@ -1,8 +1,8 @@
 const request = require('request')
 const cheerio = require('cheerio')
+const colors = require('colors')
 const mkdirp = require('mkdirp')
 const async = require('async')
-const chalk = require('chalk')
 const path = require('path')
 const fs = require('fs')
 
@@ -26,7 +26,7 @@ const genPagesURL = (start, end, dir) => {
     URLS.push(URL_TPL(i))
   }
   // create folder
-  mkdirp(dir, err => err ? console.log(chalk.red(err)) : console.log(chalk.green(`${dir}:Folder created successfully!`)))
+  mkdirp(dir, err => err ? console.log(err.red) : console.log(`${dir}:Folder created successfully!`.green))
   return URLS
 }
 
@@ -37,9 +37,9 @@ const getContent = (url, cb, cb1) => {
     url: url,
     headers: prefixHeader
   }
-  console.log(chalk.yellow(`Start getting the page content：${options.url}`))
+  console.log(`Start getting the page content：${options.url}`.yellow)
   request(options, (error, response, body) => {
-    error => error ? console.log(chalk.red(error)) : console.log(chalk.green(`${options.url}:Get successfully!`))
+    error => error ? console.log(error.red) : console.log(`${options.url}:Get successfully!`.green)
     if (!error && response.statusCode == 200) {
       cb(body)
     }
@@ -68,10 +68,10 @@ const downloadImage = (uri, cb) => {
   (error, res, body) => {
     if (!error && res.statusCode == 200) {
       if (!body) {
-          console.log(chalk.red('Unable to get content!'))
+          console.log('Unable to get content!'.red)
       }
       const fileName = `${Date.now()}&${~~(Math.random()*4000)}${uri.substr(-4, 4)}` 
-      fs.writeFile(`${dir}/${fileName}`, body, 'binary', err => err ? console.log(chalk.red(err)) : console.log(chalk.green(`${fileName}:Image are downloaded over!`)))
+      fs.writeFile(`${dir}/${fileName}`, body, 'binary', err => err ? console.log(err.red) : console.log(`${fileName}:Image are downloaded over!`.green))
     }
     cb && cb(null, null)
   })
@@ -80,10 +80,10 @@ const downloadImage = (uri, cb) => {
 async.mapLimit(PAGES_URL, thread, (url, cb) => getContent(url, data => getURL(data, 'a.preview', 'href', url => secPageUrl.push(url)), cb), (error, result) => {
   console.log('Get all page links!')
   async.mapLimit(secPageUrl, thread, (url, cb) => getContent(url, data => getURL(data, '#wallpaper', 'src', url => allImgURL.push(url)), cb), (err, rzt) => {
-    console.log(chalk.green('Get all images links!'))
-    console.log(chalk.yellow('Start downloading images!'))
+    console.log('Get all images links!'.green)
+    console.log('Start downloading images!'.yellow)
     async.mapLimit(allImgURL, thread, (url, cb) => downloadImage(url, cb), (er, rz) => {
-      console.log(chalk.green('All pictures are downloaded successfully!'))
+      console.log('All pictures are downloaded successfully!'.green)
     })
   })
 })
