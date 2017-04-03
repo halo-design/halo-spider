@@ -5,7 +5,7 @@
   "scripts": {
     "jd": "node bin/jd-spider.js",
     "wh": "node bin/wh-spider.js",
-    "wh-url": "node bin/wh-url-spider.js",
+    "merge": "node bin/merge.js",
     "download": "node bin/download.js"
   },
   "keywords": [

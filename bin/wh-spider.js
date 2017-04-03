@@ -5,45 +5,58 @@ const mkdirp = require('mkdirp')
 const async = require('async')
 const path = require('path')
 const fs = require('fs')
+const downloader = require('./downloader')
 
 const prefixHeader = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36',
   'Connection': 'keep-alive'
 }
 
-const thread = 10
-const output = './wallhaven'
+const thread = 50
+const startPage = 0
+const endPage = 20
+const jsonFileName = './data/wallhaven-random.json'
+
+const reqTimeout = 40000
 
 let secPageUrl = []
 let allImgURL = []
 
-// https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
-const URL_TPL = num => `https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=${num}`
+let failedCount = 0
 
-const genPagesURL = (start, end, dir) => {
+// https://alpha.wallhaven.cc/random?page=
+// https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
+// https://alpha.wallhaven.cc/search?categories=111&purity=100&sorting=views&order=desc&page=
+// https://alpha.wallhaven.cc/search?categories=111&purity=110&sorting=favorites&order=desc&page=
+// https://alpha.wallhaven.cc/search?categories=001&purity=100&sorting=favorites&order=desc&page=
+// https://alpha.wallhaven.cc/latest?page=
+const URL_TPL = num => `https://alpha.wallhaven.cc/random?page=${num}`
+
+const genPagesURL = (start, end) => {
   let URLS = []
   for (let i = start; i <= end; i++) {
     URLS.push(URL_TPL(i))
   }
-  // create folder
-  mkdirp(dir, err => err ? console.log(err.red) : console.log(`${dir}:Folder created successfully!`.green))
   return URLS
 }
 
-const PAGES_URL = genPagesURL(1, 20, output)
+const PAGES_URL = genPagesURL(startPage, endPage)
 
-const getContent = (url, cb, cb1) => {
+const getContent = (url, cb, hookCb) => {
   const options = {
     url: url,
-    headers: prefixHeader
+    headers: prefixHeader,
+    timeout: reqTimeout
   }
-  console.log(`Start getting the page content：${options.url}`.yellow)
   request(options, (error, response, body) => {
-    error => error ? console.log(error.red) : console.log(`${options.url}:Get successfully!`.green)
-    if (!error && response.statusCode == 200) {
+    if (error) {
+      console.log(`[${error}] ${options.url} get failed!`.red)
+      failedCount++
+    } else if (response.statusCode == 200) {
+      console.log(`${options.url}: Content get successfully!`.green)
       cb(body)
     }
-    cb1 && cb1(null, null)
+    hookCb && hookCb(null, null)
   })
 }
 
@@ -59,31 +72,41 @@ const getURL = (data, filter, attr, everyCb) => {
   return URL
 }
 
-const downloadImage = (uri, cb) => {
-  const dir = output
-  request({
-    uri: uri,
-    encoding: 'binary'
-  },
-  (error, res, body) => {
-    if (!error && res.statusCode == 200) {
-      if (!body) {
-          console.log('Unable to get content!'.red)
-      }
-      const fileName = `${Date.now()}&${~~(Math.random()*4000)}${uri.substr(-4, 4)}` 
-      fs.writeFile(`${dir}/${fileName}`, body, 'binary', err => err ? console.log(err.red) : console.log(`${fileName}:Image are downloaded over!`.green))
-    }
-    cb && cb(null, null)
-  })
-}
+async.mapLimit(
+  PAGES_URL,
+  thread,
 
-async.mapLimit(PAGES_URL, thread, (url, cb) => getContent(url, data => getURL(data, 'a.preview', 'href', url => secPageUrl.push(url)), cb), (error, result) => {
-  console.log('Get all page links!')
-  async.mapLimit(secPageUrl, thread, (url, cb) => getContent(url, data => getURL(data, '#wallpaper', 'src', url => allImgURL.push(url)), cb), (err, rzt) => {
-    console.log('Get all images links!'.green)
-    console.log('Start downloading images!'.yellow)
-    async.mapLimit(allImgURL, thread, (url, cb) => downloadImage(url, cb), (er, rz) => {
-      console.log('All pictures are downloaded successfully!'.green)
-    })
-  })
-})
+  (url, cb) => getContent(
+    url, 
+    data => getURL(data, 'a.preview', 'href', url => secPageUrl.push(url)), 
+    cb
+  ),
+
+  (error, result) => {
+    console.log(`Get ${PAGES_URL.length} pages link!`.green)
+
+    async.mapLimit(
+      secPageUrl, 
+      thread, 
+      
+      (url, cb) => getContent(
+        url, 
+        data => getURL(data, '#wallpaper', 'src', url => allImgURL.push(url)), 
+        cb
+      ), 
+
+      (err, rzt) => {
+        console.log(`Get ${failedCount} images link failed!`.red)
+        console.log(`Get ${allImgURL.length - failedCount} images link successfully!`.green)
+        const images = {}
+        images.src = allImgURL
+        fs.writeFileSync(jsonFileName, JSON.stringify(images))
+        downloader({
+          outputPath: './assets/wallhaven-random',
+          downloadQueue: allImgURL,
+          thread: 15
+        })
+      }
+    )
+  }
+)
