@@ -6,6 +6,57 @@ const async = require('async')
 const path = require('path')
 const fs = require('fs')
 
+
+
+exports.URLgenerator = (template, startNumber, endMunber) => {
+  let URLS = []
+  for (let i = startNumber; i <= endMunber; i++) {
+    URLS.push(template.replace(/{{index}}/g, i))
+  }
+  return URLS
+}
+
+const prefixHeader = {
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36',
+  'Connection': 'keep-alive'
+}
+
+
+exports.getContent = (url, reqTimeout, cb, successCb) => {
+  const options = {
+    url: url,
+    headers: prefixHeader,
+    timeout: reqTimeout ? reqTimeout : 40000
+  }
+  request(options, (error, response, body) => {
+    if (error) {
+      console.log(`[${error}] ${options.url} get failed!`.red)
+      failedCount++
+    } else if (response.statusCode == 200) {
+      console.log(`${options.url}: Content get successfully!`.green)
+      successCb(body)
+    }
+    cb && cb(null, null)
+  })
+}
+
+exports.extractURL = (data, elementName, attr, eachCb) => {
+  const $ = cheerio.load(data)
+  let URL = []
+  $(elementName).each(function () {
+    let lnk = $(this).attr(attr)
+    lnk.indexOf('http') === -1 ?  lnk = `http:${lnk}` : null
+    URL.push(lnk)
+    eachCb && eachCb(lnk)
+  })
+  return URL
+}
+
+exports.writeJSON = (path, obj) => {
+  fs.writeFileSync(path, JSON.stringify(obj))
+}
+
+
 /************  options  ***************
  * 
  * @ param [String] outputPath
@@ -20,7 +71,7 @@ const fs = require('fs')
  *
  */
 
-module.exports = (options) => {
+exports.downloader = options => {
   const dir = options.outputPath
   const fileArray = options.downloadQueue
   const thread = options.thread || 10
@@ -81,3 +132,4 @@ module.exports = (options) => {
     }
   )
 }
+
