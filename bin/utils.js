@@ -56,6 +56,10 @@ exports.writeJSON = (path, obj) => {
   fs.writeFileSync(path, JSON.stringify(obj))
 }
 
+exports.readJSON = (path, obj) => {
+  return JSON.parse(fs.readFileSync(path))
+}
+
 
 /************  options  ***************
  * 

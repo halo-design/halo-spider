@@ -1,18 +1,8 @@
-const request = require('request')
-const cheerio = require('cheerio')
-const colors = require('colors')
-const mkdirp = require('mkdirp')
-const async = require('async')
-const path = require('path')
-const fs = require('fs')
+const utils = require('./utils')
 
+const images1 = utils.readJSON('./data/wallhaven-favorites.json').src
+const images2 = utils.readJSON('./data/wallhaven-latest.json').src
+const images3 = utils.readJSON('./data/wallhaven-random.json').src
 
-const images1 = JSON.parse(fs.readFileSync('./data/wallhaven-girls-1.json')).src
-const images2 = JSON.parse(fs.readFileSync('./data/wallhaven-girls-2.json')).src
-const images3 = JSON.parse(fs.readFileSync('./data/wallhaven-girls-3.json')).src
-
-const ALL = {}
-ALL.src = images1.concat(images2, images3)
-
-fs.writeFileSync('./data/wallhaven-girls.json', JSON.stringify(ALL))
+utils.writeJSON('./data/wallhaven-all.json', {src: [].concat(images1, images2, images3)})
 console.log('Merge successfully!'.green)
