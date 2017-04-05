@@ -8,10 +8,11 @@ const fs = require('fs')
 
 
 
-exports.URLgenerator = (template, startNumber, endMunber) => {
+exports.URLgenerator = (template, startNumber, endMunber, multiple) => {
   let URLS = []
+  let mult = multiple ? multiple : 1
   for (let i = startNumber; i <= endMunber; i++) {
-    URLS.push(template.replace(/{{index}}/g, i))
+    URLS.push(template.replace(/{{index}}/g, i * mult))
   }
   return URLS
 }
@@ -31,7 +32,6 @@ exports.getContent = (url, reqTimeout, cb, successCb) => {
   request(options, (error, response, body) => {
     if (error) {
       console.log(`[${error}] ${options.url} get failed!`.red)
-      failedCount++
     } else if (response.statusCode == 200) {
       console.log(`${options.url}: Content get successfully!`.green)
       successCb(body)

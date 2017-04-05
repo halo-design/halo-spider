@@ -5,6 +5,7 @@
   "scripts": {
     "jd": "node bin/jandan-spider.js",
     "wh": "node bin/wallhaven-spider.js",
+    "1x": "node bin/1x-spider.js",
     "merge": "node bin/merge.js",
     "download": "node bin/download.js"
   },
@@ -21,6 +22,7 @@
     "fs": "^0.0.1-security",
     "http": "^0.0.0",
     "mkdirp": "^0.5.1",
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "xml2js": "^0.4.17"
   }
 }
