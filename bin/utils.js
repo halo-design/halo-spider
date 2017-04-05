@@ -17,7 +17,7 @@ exports.URLgenerator = (template, startNumber, endMunber) => {
 }
 
 const prefixHeader = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36',
   'Connection': 'keep-alive'
 }
 

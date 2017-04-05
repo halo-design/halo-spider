@@ -27,7 +27,7 @@ async.mapLimit(
     utils.downloader({
       outputPath: './assets/jandan',
       downloadQueue: allImgURL,
-      thread: 15
+      thread: 30
     })
   }
 )
