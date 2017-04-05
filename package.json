@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "web spider",
   "scripts": {
-    "jd": "node bin/jd-spider.js",
-    "wh": "node bin/wh-spider.js",
+    "jd": "node bin/jandan-spider.js",
+    "wh": "node bin/wallhaven-spider.js",
     "merge": "node bin/merge.js",
     "download": "node bin/download.js"
   },
