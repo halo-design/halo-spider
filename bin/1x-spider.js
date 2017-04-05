@@ -8,8 +8,12 @@ let secPageUrl = []
 let allImgURL = []
 let failedCount = 0
 
+const popular = 'https://1x.com/backend/loadmore.php?app=photos&from={{index}}&cat=all&sort=popular&userid=0'
+const architecture = 'https://1x.com/backend/loadmore.php?app=photos&from={{index}}&cat=architecture&sort=popular&userid=0'
+const conceptual = 'https://1x.com/backend/loadmore.php?app=photos&from={{index}}&cat=conceptual&sort=popular&userid=0'
+const landscape = 'https://1x.com/backend/loadmore.php?app=photos&from={{index}}&cat=landscape&sort=popular&userid=0'
 
-const PAGES_URL = utils.URLgenerator('https://1x.com/backend/loadmore.php?app=photos&from={{index}}&cat=all&sort=popular&userid=0', 2, 2, 30)
+const PAGES_URL = utils.URLgenerator(landscape, 1, 100, 30)
 
 async.mapLimit(
   PAGES_URL,
@@ -51,9 +55,9 @@ async.mapLimit(
       (err, rzt) => {
         console.log(`Get ${failedCount} images link failed!`.red)
         console.log(`Get ${allImgURL.length - failedCount} images link successfully!`.green)
-        utils.writeJSON('./data/1x.json', {src: allImgURL})
+        utils.writeJSON('./data/1x-landscape.json', {src: allImgURL})
         utils.downloader({
-          outputPath: './assets/1x',
+          outputPath: './assets/1x-landscape',
           downloadQueue: allImgURL,
           thread: 15
         })
