@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "web spider",
   "scripts": {
+    "auth": "node bin/auth-spider.js",
     "jd": "node bin/jandan-spider.js",
     "wh": "node bin/wallhaven-spider.js",
     "1x": "node bin/1x-spider.js",
@@ -24,5 +25,8 @@
     "mkdirp": "^0.5.1",
     "request": "^2.81.0",
     "xml2js": "^0.4.17"
+  },
+  "devDependencies": {
+    "puppeteer": "^0.12.0"
   }
 }
